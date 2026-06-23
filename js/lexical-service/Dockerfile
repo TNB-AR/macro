@@ -5,7 +5,7 @@ ARG GITHUB_PACKAGES_TOKEN
 RUN echo '[install.scopes]\nmacro-inc = { token = "'${GITHUB_PACKAGES_TOKEN}'", url = "https://npm.pkg.github.com" }' > /root/.bunfig.toml
 
 COPY lexical-service/package.json lexical-service/bun.lock ./
-RUN bun install --frozen-lockfile
+RUN bun install
 
 COPY lexical-service ./
 COPY lexical-core ./lexical-core

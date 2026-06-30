@@ -35,6 +35,8 @@ import {
 import { useFeatureFlag } from '@app/lib/analytics/posthog';
 import {
   ENABLE_FEATURED_SEARCH_RESULTS,
+  ENABLE_GRAPHQL_SOUP_FLAG,
+  ENABLE_GRAPHQL_SOUP_OVERRIDE,
   ENABLE_SUPPORTED_SOUP_FOREIGN_ENTITIES_FLAG,
   ENABLE_SUPPORTED_SOUP_FOREIGN_ENTITIES_OVERRIDE,
 } from '@core/constant/featureFlags';
@@ -346,6 +348,9 @@ export const SoupViewContextProvider: FlowComponent<
       enabledOverride: ENABLE_SUPPORTED_SOUP_FOREIGN_ENTITIES_OVERRIDE,
     }
   );
+  const useGraphqlSoupFF = useFeatureFlag(ENABLE_GRAPHQL_SOUP_FLAG, {
+    enabledOverride: ENABLE_GRAPHQL_SOUP_OVERRIDE,
+  });
 
   // Create filter context for context-aware filter predicates
   const getFilterContext = (): FilterContext => ({
@@ -371,11 +376,16 @@ export const SoupViewContextProvider: FlowComponent<
   });
 
   const itemsQuery = useSoupAstItemsQuery(
-    () => ({
-      params: soupParams(),
-      body: soupBody(),
-      groupBy: groupByField(),
-    }),
+    () => {
+      const groupBy = groupByField();
+      return {
+        params: soupParams(),
+        body: soupBody(),
+        groupBy,
+        transport:
+          useGraphqlSoupFF().enabled && !groupBy ? 'graphql' : undefined,
+      };
+    },
     () => {
       const view = activeListView();
       return {
